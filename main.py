@@ -51,7 +51,7 @@ def process_reel(chat_id, url):
         media_file = genai.upload_file(path=filename)
 
         # 3. Generate the "real good explanation"
-        model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+        model = genai.GenerativeModel(model_name="gemini-3.6-flash")
         prompt = "Listen to this audio from an Instagram Reel. Write a highly detailed, engaging explanation of what this content is about. Extract all key insights and format it clearly."
 
         response = model.generate_content([prompt, media_file])
