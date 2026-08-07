@@ -1,3 +1,5 @@
 Flask
 gunicorn
 requests
+yt-dlp
+google-generativeai
