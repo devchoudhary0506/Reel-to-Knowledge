@@ -69,11 +69,18 @@ def process_reel(chat_id, url):
                 "content": summary,
                 "reel_url": url
             }
+            # Use allow_redirects=True so Python handles the Google 302 redirect properly
             res = requests.post(APPS_SCRIPT_URL, json=payload, allow_redirects=True)
+            
             if res.status_code == 200:
                 res_data = res.json()
                 if res_data.get("status") == "success":
                     doc_url = res_data.get("doc_url")
+                else:
+                    # Now the bot will tell you if Google Script crashes!
+                    send_message(chat_id, f"⚠️ **Google Script Error:** {res_data.get('message')}")
+            else:
+                 send_message(chat_id, f"⚠️ **Webhook Error:** {res.status_code}")
 
         # 5. Send message and Google Doc link to Telegram
         msg = f"📝 **Reel Summary:**\n\n{summary}\n\n---"
