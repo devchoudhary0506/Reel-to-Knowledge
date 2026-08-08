@@ -1,6 +1,7 @@
 import os
 import requests
 import time
+import threading
 from flask import Flask, request, jsonify
 import google.generativeai as genai
 import yt_dlp
@@ -17,7 +18,7 @@ if GEMINI_API_KEY:
 
 @app.route("/", methods=["GET"])
 def home():
-    return "Reel Catcher Bot is live with Google Docs & Sheets integration!", 200
+    return "Reel Catcher Bot is live with Async Processing!", 200
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -28,7 +29,9 @@ def webhook():
         
         if "instagram.com" in text:
             send_message(chat_id, "Caught the Reel! Analyzing with Gemini, generating Google Doc & updating Sheet...")
-            process_reel(chat_id, text)
+            
+            # Start process_reel in a background thread so Telegram gets immediate 200 OK
+            threading.Thread(target=process_reel, args=(chat_id, text)).start()
         else:
             send_message(chat_id, "Please send me a valid Instagram Reel link!")
             
@@ -69,7 +72,6 @@ def process_reel(chat_id, url):
                 "content": summary,
                 "reel_url": url
             }
-            # Use allow_redirects=True so Python handles the Google 302 redirect properly
             res = requests.post(APPS_SCRIPT_URL, json=payload, allow_redirects=True)
             
             if res.status_code == 200:
@@ -77,10 +79,9 @@ def process_reel(chat_id, url):
                 if res_data.get("status") == "success":
                     doc_url = res_data.get("doc_url")
                 else:
-                    # Now the bot will tell you if Google Script crashes!
                     send_message(chat_id, f"⚠️ **Google Script Error:** {res_data.get('message')}")
             else:
-                 send_message(chat_id, f"⚠️ **Webhook Error:** {res.status_code}")
+                send_message(chat_id, f"⚠️ **Webhook Error:** {res.status_code}")
 
         # 5. Send message and Google Doc link to Telegram
         msg = f"📝 **Reel Summary:**\n\n{summary}\n\n---"
