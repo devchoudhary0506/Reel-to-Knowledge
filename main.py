@@ -69,7 +69,7 @@ def process_reel(chat_id, url):
                 "content": summary,
                 "reel_url": url
             }
-            res = requests.post(APPS_SCRIPT_URL, json=payload, follow_redirects=True)
+            res = requests.post(APPS_SCRIPT_URL, json=payload, allow_redirects=True)
             if res.status_code == 200:
                 res_data = res.json()
                 if res_data.get("status") == "success":
